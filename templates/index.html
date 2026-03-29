@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1E1E2E">
+  <title>학습 마인드맵</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ 상단 툴바 ═══ -->
+  <div id="topbar">
+    <div class="group">
+      <button class="btn" id="btn-maps" title="맵 목록">📂</button>
+      <span id="map-title" style="font-size:14px;font-weight:600;padding:0 6px;white-space:nowrap;">마인드맵</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="group">
+      <button class="btn mode-btn active" id="btn-select" title="선택/이동 (S)">☝️ 선택</button>
+      <button class="btn mode-btn hide-small" id="btn-add" title="노드 추가 (A)">➕ 추가</button>
+      <button class="btn mode-btn hide-small" id="btn-connect" title="연결 (C)">🔗 연결</button>
+    </div>
+
+    <div class="divider hide-mobile"></div>
+
+    <div class="group hide-mobile">
+      <button class="btn sm" id="btn-delete" title="삭제 (Del)">🗑</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="group">
+      <button class="btn sm" id="btn-zoom-out" title="축소">−</button>
+      <button class="btn sm" id="btn-zoom-in" title="확대">+</button>
+      <button class="btn sm" id="btn-zoom-fit" title="맞춤">맞춤</button>
+    </div>
+
+    <div class="divider hide-mobile"></div>
+
+    <div class="group hide-mobile">
+      <button class="btn sm" id="btn-layout-radial" title="방사형 정렬">🎯 방사형</button>
+      <button class="btn sm hide-small" id="btn-layout-tree" title="트리형 정렬 (↓)">🌲 트리↓</button>
+      <button class="btn sm hide-small" id="btn-layout-htree" title="트리형 정렬 (→)">🌿 트리→</button>
+      <button class="btn sm hide-small" id="btn-layout-grid" title="격자형 정렬">⊞ 격자</button>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <div class="group">
+      <button class="btn sm" id="btn-search-toggle" title="검색 (⌘F)">🔍</button>
+      <button class="btn sm" id="btn-save-now" title="지금 저장 (⌘S)">💾</button>
+      <button class="btn sm" id="btn-panel-toggle" title="세부 패널">📝</button>
+    </div>
+
+    <button class="btn sm hide-mobile" id="btn-new-map">+ 새 맵</button>
+  </div>
+
+  <!-- ═══ 메인 영역 ═══ -->
+  <div id="main">
+    <!-- 캔버스 -->
+    <div id="canvas-wrap">
+      <canvas id="mindmap"></canvas>
+
+      <!-- 오버레이 -->
+      <div id="zoom-badge">100%</div>
+      <div id="stats-badge">노드 0</div>
+      <div id="save-indicator"></div>
+
+      <!-- 검색바 -->
+      <div id="search-bar" class="hidden">
+        <input id="search-input" type="text" placeholder="노드 검색..." autocomplete="off">
+        <span id="search-count" class="count"></span>
+        <button class="btn sm" id="btn-search-prev">▲</button>
+        <button class="btn sm" id="btn-search-next">▼</button>
+      </div>
+
+      <!-- 모바일 FAB -->
+      <div id="fab-container">
+        <button class="fab primary" id="fab-add" title="노드 추가">+</button>
+        <button class="fab secondary" id="fab-panel" title="세부 패널">📝</button>
+      </div>
+    </div>
+
+    <!-- ═══ 세부내용 패널 ═══ -->
+    <div id="detail-panel">
+      <div class="panel-header">
+        <h3>항목을 선택하세요</h3>
+        <div class="sub">노드나 화살표를 클릭하면 편집할 수 있습니다</div>
+      </div>
+      <div class="panel-body">
+        <div>
+          <label>제목 / 라벨</label>
+          <input type="text" id="detail-title" placeholder="제목 입력...">
+        </div>
+
+        <div id="size-row" class="size-row" style="display:none;">
+          <label>크기</label>
+          <input type="range" id="detail-size" min="20" max="120" value="45">
+          <span id="detail-size-val">45</span>
+        </div>
+
+        <div id="color-row" style="display:none;">
+          <label>색상</label>
+          <div id="color-buttons" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <label>세부내용</label>
+          <textarea id="detail-text" placeholder="세부 내용을 입력하세요...&#10;&#10;예: 정의, 핵심 개념, 관련 지식 등"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 맵 목록 모달 ═══ -->
+<div id="map-list-overlay" class="hidden">
+  <div id="map-list-modal">
+    <div class="modal-header">
+      <h2>📚 내 마인드맵</h2>
+      <div style="display:flex;gap:6px;">
+        <button class="btn success" id="btn-new-map-modal" onclick="createNewMap()">+ 새로 만들기</button>
+        <button class="btn" onclick="closeMapList()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <p style="text-align:center;color:#888;padding:20px;">불러오는 중...</p>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast"></div>
+
+<script src="/static/mindmap.js"></script>
+
+<!-- PWA 서비스 워커 -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
